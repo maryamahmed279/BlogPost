@@ -1,37 +1,38 @@
 name: Deploy to ink-ideas.ct.ws
 
-# Run manually or on push to the main branch
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   deploy:
-    name: Deploy to ink-ideas.ct.ws
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Clone the latest code from GitHub
-      - name: Get latest code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Upload code via FTP
-      - name: Deploy to InfinityFree via FTP
+      # Optional: Build steps for Laravel
+      - name: Install dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader
+          npm install && npm run production
+
+      - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ftp.infinityfree.net
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /ink-ideas.ct.ws/htdocs/  # For addon domains
-          timeout: 86400000
-          log-level: standard
-          protocol: ftps  # Required for InfinityFree
+          server-dir: "/htdocs/ink_ideas.ct.ws/"  # Fixed: underscores and quotes
+          protocol: ftps
           port: 21
-          local-dir: "./public"  # Deploy Laravel's public folder only
+          local-dir: "./public"
           exclude: |
             .git/
             .github/
             node_modules/
-          log-level: verbose  # For detailed error reporting
+            .env.example
+            *.md
+          log-level: verbose
+          timeout: 300000  # 5 minutes (more reasonable than 24h)
