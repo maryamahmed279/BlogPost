@@ -21,9 +21,17 @@ jobs:
       - name: Deploy to InfinityFree via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ftpupload.net
+          server: ftp.infinityfree.net
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /ink-ideas.ct.ws/htdocs/  # For addon domains
           timeout: 86400000
           log-level: standard
+          protocol: ftps  # Required for InfinityFree
+          port: 21
+          local-dir: "./public"  # Deploy Laravel's public folder only
+          exclude: |
+            .git/
+            .github/
+            node_modules/
+          log-level: verbose  # For detailed error reporting
