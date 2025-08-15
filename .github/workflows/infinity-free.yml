@@ -1,29 +1,37 @@
-name: Deploy to Ink & Ideas
+name: Deploy to InfinityFree
 
-# Run manually or on push to the main branch
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Allows manual triggering
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   deploy:
-    name: Deploy via FTP
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Clone the latest code from GitHub
-      - name: Get latest code
+      # Step 1: Checkout code from GitHub
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Upload code via FTP
-      - name: Deploy to Ink & Ideas via FTP
+      # Step 2: Debug (list files to ensure checkout worked)
+      - name: List files (debug)
+        run: ls -la
+
+      # Step 3: Deploy via FTP (InfinityFree-specific settings)
+      - name: Deploy to InfinityFree
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ftpupload.net
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /Ink & Ideas.com/htdocs/  # For addon domains
-          timeout: 86400000
-          log-level: standard
+          server: ftp.infinityfree.net  # InfinityFree's FTP server
+          username: ${{ secrets.IF_USERNAME }}  # Your InfinityFree username
+          password: ${{ secrets.IF_PASSWORD }}  # Your InfinityFree password
+          server-dir: "/htdocs/"  # InfinityFree's root web directory
+          local-dir: "./public"   # Deploy Laravel's public folder only
+          protocol: ftps          # InfinityFree requires FTPS (not regular FTP)
+          port: 21                # Default FTPS port
+          dangerous-clean-slate: false  # Don't delete existing files first
+          exclude: |
+            .git/
+            .github/
+            node_modules/
+            .env
+          log-level: verbose      # Detailed error logs
