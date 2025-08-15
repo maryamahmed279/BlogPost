@@ -3,7 +3,7 @@ name: Deploy to ink-ideas.ct.ws
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   deploy:
