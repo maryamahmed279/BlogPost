@@ -1,7 +1,7 @@
-name: Deploy to InfinityFree
+name: Deploy to ink-ideas.ct.ws (InfinityFree)
 
 on:
-  workflow_dispatch:  # Allows manual triggering
+  workflow_dispatch:
   push:
     branches: [ main ]
 
@@ -9,29 +9,47 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout code from GitHub
+      # Step 1: Get the code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Debug (list files to ensure checkout worked)
-      - name: List files (debug)
-        run: ls -la
+      # Step 2: Laravel setup
+      - name: Install PHP dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader
+          cp .env.example .env
+          php artisan key:generate
 
-      # Step 3: Deploy via FTP (InfinityFree-specific settings)
-      - name: Deploy to InfinityFree
+      # Step 3: Frontend build
+      - name: Build assets
+        run: |
+          npm install
+          npm run production
+
+      # Step 4: Prepare deployment
+      - name: Create deployment package
+        run: |
+          mkdir -p deploy
+          cp -a public/* deploy/
+          cp -a vendor deploy/
+          cp -a storage deploy/
+          cp .env deploy/
+          cp -a bootstrap/cache deploy/bootstrap/
+
+      # Step 5: FTP Deploy
+      - name: Deploy to ink-ideas.ct.ws
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ftp.infinityfree.net  # InfinityFree's FTP server
-          username: ${{ secrets.IF_USERNAME }}  # Your InfinityFree username
-          password: ${{ secrets.IF_PASSWORD }}  # Your InfinityFree password
-          server-dir: "/htdocs/"  # InfinityFree's root web directory
-          local-dir: "./public"   # Deploy Laravel's public folder only
-          protocol: ftps          # InfinityFree requires FTPS (not regular FTP)
-          port: 21                # Default FTPS port
-          dangerous-clean-slate: false  # Don't delete existing files first
+          server: ftp.infinityfree.net
+          username: ${{ secrets.IF_USERNAME }}  # epiz_XXXXXX format
+          password: ${{ secrets.IF_PASSWORD }}
+          server-dir: "/htdocs/"  # InfinityFree's root for primary domain
+          local-dir: "./deploy"
+          protocol: ftps
+          port: 21
           exclude: |
-            .git/
+            .git*
             .github/
             node_modules/
-            .env
-          log-level: verbose      # Detailed error logs
+            *.md
+          log-level: verbose
