@@ -1,55 +1,29 @@
-name: Deploy to ink-ideas.ct.ws (InfinityFree)
+name: Deploy to ink-ideas.ct.ws
 
+# Run manually or on push to the main branch
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
+    name: Deploy to ink-ideas.ct.ws
     runs-on: ubuntu-latest
+
     steps:
-      # Step 1: Get the code
-      - name: Checkout repository
+      # Step 1: Clone the latest code from GitHub
+      - name: Get latest code
         uses: actions/checkout@v4
 
-      # Step 2: Laravel setup
-      - name: Install PHP dependencies
-        run: |
-          composer install --no-dev --optimize-autoloader
-          cp .env.example .env
-          php artisan key:generate
-
-      # Step 3: Frontend build
-      - name: Build assets
-        run: |
-          npm install
-          npm run production
-
-      # Step 4: Prepare deployment
-      - name: Create deployment package
-        run: |
-          mkdir -p deploy
-          cp -a public/* deploy/
-          cp -a vendor deploy/
-          cp -a storage deploy/
-          cp .env deploy/
-          cp -a bootstrap/cache deploy/bootstrap/
-
-      # Step 5: FTP Deploy
-      - name: Deploy to ink-ideas.ct.ws
+      # Step 2: Upload code via FTP
+      - name: Deploy to Ink & Ideas via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ftp.infinityfree.net
-          username: ${{ secrets.IF_USERNAME }}  # epiz_XXXXXX format
-          password: ${{ secrets.IF_PASSWORD }}
-          server-dir: "/htdocs/"  # InfinityFree's root for primary domain
-          local-dir: "./deploy"
-          protocol: ftps
-          port: 21
-          exclude: |
-            .git*
-            .github/
-            node_modules/
-            *.md
-          log-level: verbose
+          server: ftpupload.net
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /ink-ideas.ct.ws/htdocs/  # For addon domains
+          timeout: 86400000
+          log-level: standard
