@@ -22,8 +22,8 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ftpupload.net
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          username: ${{ if0_39715401 }}
+          password: ${{ Zy99pkuWItAlf }}
           server-dir: /ink-ideas.ct.ws/htdocs/  # For addon domains
           timeout: 86400000
           log-level: standard
